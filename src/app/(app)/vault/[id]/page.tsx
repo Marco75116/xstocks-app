@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BuyCard } from "@/components/vault/BuyCard";
 import { UsdcBalanceCard } from "@/components/vault/UsdcBalanceCard";
+import { VaultTotalValue } from "@/components/vault/VaultTotalValue";
 import { getStockByTicker } from "@/lib/data";
 import { api } from "@/lib/eden";
 import { formatAddress, formatDate } from "@/lib/formatters";
@@ -103,6 +104,13 @@ export default function VaultDetailPage({
             </Badge>
           </div>
         </div>
+
+        {vault.smartAccountAddress && (
+          <VaultTotalValue
+            smartAccountAddress={vault.smartAccountAddress}
+            compositions={compositions}
+          />
+        )}
 
         <div className="flex h-1.5 gap-px overflow-hidden rounded-full">
           {compositions.map((comp) => {
