@@ -9,8 +9,8 @@ import { formatCurrency } from "@/lib/formatters";
 
 export function VaultCard({ vault }: { vault: Vault }) {
   return (
-    <Link href={`/vault/${vault.id}`}>
-      <Card className="transition-colors hover:bg-muted/50">
+    <Link href={`/vault/${vault.id}`} className="h-full">
+      <Card className="h-full transition-colors hover:bg-muted/50">
         <CardContent className="space-y-3 p-4">
           <div className="flex items-start justify-between">
             <div>

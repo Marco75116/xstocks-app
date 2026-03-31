@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut, Wallet } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import { ConnectWalletDialog } from "@/components/ConnectWalletDialog";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,13 @@ export function WalletButton() {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (isConnected && address) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (mounted && isConnected && address) {
     return (
       <div className="flex items-center gap-1">
         <div className="flex flex-1 items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium">
