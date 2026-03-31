@@ -106,6 +106,49 @@ Use shadcn/ui for **every** component — never build raw HTML elements when a s
 - Factorize into smaller components/functions
 - Prefer explicit props typing over `React.FC`
 
+## Smart Contracts — Ink Mainnet (Chain ID: 57073)
+
+### Deployed Addresses
+
+| Contract | Address |
+|----------|---------|
+| AccountFactory | `0x52ce41F6B4e95b6891F93Ad85165b525412e1362` |
+| Operator (backend signer) | `0xB351edfb846d7c26Aed130c2DE66151c1efF5236` |
+| USDC | `0x2D270e6886d130D724215A266106e6832161EAEd` |
+| CoW Relayer | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` |
+
+### AccountFactory
+
+Deploys one `UserAccount` per user via CREATE2 (deterministic addresses).
+
+| Function | Description |
+|----------|-------------|
+| `createAccount(address owner) → address` | Deploys a new UserAccount for the given owner. Reverts if one already exists. |
+| `predictAddress(address owner) → address` | Returns the deterministic address where the user's account will be deployed (can be called before deployment to get a deposit address). |
+| `hasAccount(address owner) → bool` | Returns true if the owner already has an account. |
+| `accountOf(address) → address` | Returns the deployed UserAccount address (or 0x0). |
+
+### UserAccount
+
+ERC-1271 smart account that validates operator/owner signatures for CoW Protocol settlement. Auto-approves the CoW Relayer for USDC at deployment.
+
+| Function | Access | Description |
+|----------|--------|-------------|
+| `isValidSignature(bytes32 hash, bytes sig) → bytes4` | Anyone | ERC-1271: returns `0x1626ba7e` if signed by operator or owner, `0xffffffff` otherwise. Used by CoW Protocol to verify swap orders. |
+| `withdraw(address token, uint256 amount)` | Owner only | Withdraws any ERC-20 token back to the owner. |
+| `withdrawEth(uint256 amount)` | Owner only | Withdraws ETH from the account. |
+| `setOperator(address newOperator)` | Owner only | Rotates the operator key. |
+| `approveSpender(address token, address spender, uint256 amount)` | Owner only | Approves an additional token spender. |
+| `receive()` | Anyone | Accepts incoming ETH. |
+
+### Flow
+
+1. Backend calls `predictAddress(userEOA)` to get the user's deposit address before account creation.
+2. User deposits USDC to that address.
+3. Backend calls `createAccount(userEOA)` — deploys the UserAccount (USDC approval to CoW Relayer is set automatically).
+4. Backend operator signs CoW swap orders; CoW Protocol verifies via `isValidSignature`.
+5. User can withdraw their tokens at any time (full self-custody).
+
 ## Dependencies
 
 Ask before installing new dependencies.
