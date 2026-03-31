@@ -1,75 +1,84 @@
 import { ContentLayout } from "@/components/ContentLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { TRANSACTIONS } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "completed") {
+    return (
+      <Badge
+        variant="secondary"
+        className="border-positive/20 bg-positive/10 text-positive"
+      >
+        Completed
+      </Badge>
+    );
+  }
+  if (status === "pending") {
+    return <Badge variant="secondary">Pending</Badge>;
+  }
+  return <Badge variant="destructive">Failed</Badge>;
+}
 
 export default function ActivityPage() {
   return (
     <ContentLayout>
       <div className="space-y-4">
-        <h1 className="text-sm font-semibold">Activity</h1>
+        <h1 className="text-lg font-semibold">Activity</h1>
 
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
-                  <td className="px-4 py-2.5">Asset</td>
-                  <td className="px-4 py-2.5">Type</td>
-                  <td className="px-4 py-2.5">Date</td>
-                  <td className="px-4 py-2.5 text-right">Shares</td>
-                  <td className="px-4 py-2.5 text-right">Amount</td>
-                  <td className="px-4 py-2.5 text-right">Status</td>
-                </tr>
-              </thead>
-              <tbody>
-                {TRANSACTIONS.map((tx) => (
-                  <tr
-                    key={tx.id}
-                    className="border-b border-border last:border-0 transition-colors hover:bg-accent"
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Asset</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Shares</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {TRANSACTIONS.map((tx) => (
+              <TableRow key={tx.id}>
+                <TableCell className="font-mono font-medium">
+                  {tx.ticker}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={tx.type === "buy" ? "secondary" : "destructive"}
+                    className={
+                      tx.type === "buy"
+                        ? "border-positive/20 bg-positive/10 text-positive"
+                        : undefined
+                    }
                   >
-                    <td className="px-4 py-2.5 font-mono text-xs font-medium">
-                      {tx.ticker}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <span
-                        className={`rounded px-1.5 py-px font-mono text-[10px] font-medium uppercase ${
-                          tx.type === "buy"
-                            ? "bg-positive/10 text-positive"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        {tx.type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 font-mono text-[11px] text-muted-foreground">
-                      {formatDate(tx.date)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono text-[11px] text-muted-foreground">
-                      {tx.shares.toFixed(4)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono text-xs font-medium">
-                      {formatCurrency(tx.amount)}
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
-                      <span
-                        className={`font-mono text-[10px] ${
-                          tx.status === "completed"
-                            ? "text-positive"
-                            : tx.status === "pending"
-                              ? "text-yellow-500"
-                              : "text-destructive"
-                        }`}
-                      >
-                        {tx.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
+                    {tx.type.toUpperCase()}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDate(tx.date)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-muted-foreground">
+                  {tx.shares.toFixed(4)}
+                </TableCell>
+                <TableCell className="text-right font-mono font-medium">
+                  {formatCurrency(tx.amount)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <StatusBadge status={tx.status} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </ContentLayout>
   );

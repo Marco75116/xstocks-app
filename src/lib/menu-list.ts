@@ -4,6 +4,7 @@ import {
   type LucideIcon,
   PlusCircle,
   Settings,
+  Vault,
 } from "lucide-react";
 
 type Submenu = {
@@ -33,7 +34,7 @@ export function getMenuList(pathname: string): Group[] {
         {
           href: "/",
           label: "Home",
-          active: pathname === "/" || pathname.startsWith("/vault"),
+          active: pathname === "/",
           icon: Home,
           submenus: [],
         },
@@ -49,6 +50,18 @@ export function getMenuList(pathname: string): Group[] {
           label: "Add Funds",
           active: pathname.startsWith("/add-funds"),
           icon: PlusCircle,
+          submenus: [],
+        },
+      ],
+    },
+    {
+      groupLabel: "Vaults",
+      menus: [
+        {
+          href: "/vault/new",
+          label: "New Vault",
+          active: pathname === "/vault/new",
+          icon: Vault,
           submenus: [],
         },
       ],

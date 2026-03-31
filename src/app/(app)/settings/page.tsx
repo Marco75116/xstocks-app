@@ -13,21 +13,21 @@ export default function SettingsPage() {
   return (
     <ContentLayout>
       <div className="space-y-4">
-        <h1 className="text-sm font-semibold">Settings</h1>
+        <h1 className="text-lg font-semibold">Settings</h1>
 
-        <Card className="overflow-hidden">
+        <Card>
           <CardContent className="divide-y divide-border p-0">
             {settingsItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
-                className="flex w-full items-center justify-between px-3.5 py-3 text-left transition-colors hover:bg-accent"
+                className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/50"
               >
-                <div className="flex items-center gap-2.5">
-                  <item.icon className="size-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium">{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <item.icon className="size-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{item.label}</span>
                 </div>
-                <ChevronRight className="size-3.5 text-muted-foreground" />
+                <ChevronRight className="size-4 text-muted-foreground" />
               </button>
             ))}
           </CardContent>

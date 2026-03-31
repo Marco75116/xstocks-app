@@ -7,7 +7,7 @@ export default function AddFundsPage() {
   return (
     <ContentLayout>
       <div className="space-y-4">
-        <h1 className="text-sm font-semibold">Add Funds</h1>
+        <h1 className="text-lg font-semibold">Add Funds</h1>
 
         <Card>
           <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
@@ -15,12 +15,12 @@ export default function AddFundsPage() {
               <Wallet className="size-6 text-primary" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-sm font-semibold">Connect your wallet</h2>
-              <p className="text-xs text-muted-foreground">
+              <h2 className="text-base font-semibold">Connect your wallet</h2>
+              <p className="text-sm text-muted-foreground">
                 Deposit USDC to start funding your vaults.
               </p>
             </div>
-            <Button className="w-full max-w-xs rounded-lg" size="lg">
+            <Button className="w-full max-w-xs" size="lg">
               Connect Wallet
             </Button>
           </CardContent>

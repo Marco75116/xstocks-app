@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { BalanceHeader } from "@/components/BalanceHeader";
 import { ContentLayout } from "@/components/ContentLayout";
-import { StrategyHealthCard } from "@/components/StrategyHealthCard";
+
+import { Button } from "@/components/ui/button";
 import { VaultCard } from "@/components/VaultCard";
 import { VAULTS } from "@/lib/data";
 
@@ -25,12 +26,9 @@ export default function HomePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">Your Vaults</h2>
-            <Link
-              href="/vault/new"
-              className="text-primary text-xs font-medium hover:text-primary/80"
-            >
-              + New
-            </Link>
+            <Button variant="link" size="sm" asChild>
+              <Link href="/vault/new">+ New</Link>
+            </Button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -38,10 +36,6 @@ export default function HomePage() {
               <VaultCard key={vault.id} vault={vault} />
             ))}
           </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <StrategyHealthCard />
         </div>
       </div>
     </ContentLayout>
