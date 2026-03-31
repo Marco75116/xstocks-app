@@ -24,7 +24,7 @@ export function WalletButton() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="gap-2 rounded-lg border-border px-4 py-2 text-sm font-medium"
+            className="w-full gap-2 rounded-lg border-border px-4 py-2 text-sm font-medium"
           >
             <Wallet className="size-4" />
             {formatAddress(address)}
@@ -44,7 +44,7 @@ export function WalletButton() {
     <>
       <Button
         variant="outline"
-        className="gap-2 rounded-lg border-border px-4 py-2 text-sm font-medium"
+        className="w-full gap-2 rounded-lg border-border px-4 py-2 text-sm font-medium"
         onClick={() => setDialogOpen(true)}
       >
         <Wallet className="size-4" />

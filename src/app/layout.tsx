@@ -5,7 +5,7 @@ import { Web3Provider } from "@/components/Web3Provider";
 import "./globals.css";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 

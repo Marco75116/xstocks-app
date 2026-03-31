@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { StockLogo } from "@/components/StockLogo";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import type { Vault } from "@/lib/data";
 import { getStockByTicker } from "@/lib/data";
 import { formatCurrency } from "@/lib/formatters";
@@ -8,12 +10,12 @@ import { formatCurrency } from "@/lib/formatters";
 export function VaultCard({ vault }: { vault: Vault }) {
   return (
     <Link href={`/vault/${vault.id}`}>
-      <Card className="transition-colors hover:bg-accent">
-        <CardContent className="space-y-2.5 p-4">
+      <Card className="transition-colors hover:bg-muted/50">
+        <CardContent className="space-y-3 p-4">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-sm font-semibold">{vault.name}</h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {vault.labels[0]?.charAt(0).toUpperCase()}
                 {vault.labels[0]?.slice(1).toLowerCase()}
               </p>
@@ -38,19 +40,18 @@ export function VaultCard({ vault }: { vault: Vault }) {
             <p className="font-mono text-xl font-bold">
               {formatCurrency(vault.totalValue)}
             </p>
-            <span className="font-mono text-xs font-medium text-positive">
+            <Badge
+              variant="secondary"
+              className="border-positive/20 bg-positive/10 font-mono text-positive"
+            >
               +{vault.dailyGainPercent.toFixed(1)}%
-            </span>
+            </Badge>
           </div>
 
-          <div className="h-0.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-positive/60"
-              style={{
-                width: `${Math.min(vault.dailyGainPercent * 10, 100)}%`,
-              }}
-            />
-          </div>
+          <Progress
+            value={Math.min(vault.dailyGainPercent * 10, 100)}
+            className="h-1"
+          />
         </CardContent>
       </Card>
     </Link>

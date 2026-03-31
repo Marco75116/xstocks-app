@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/formatters";
 
 export function BalanceHeader({
@@ -12,18 +13,19 @@ export function BalanceHeader({
 }) {
   return (
     <div className="space-y-1">
-      <p className="text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
-        Total Balance
-      </p>
+      <p className="text-sm font-medium text-muted-foreground">Total Balance</p>
       <div className="flex items-baseline gap-4">
         <p className="font-mono text-4xl font-bold tracking-tight">
           {formatCurrency(totalBalance)}
         </p>
         {dailyGainAmount !== 0 && (
-          <span className="rounded bg-positive/10 px-2.5 py-1 font-mono text-xs font-medium text-positive">
+          <Badge
+            variant="secondary"
+            className="border-positive/20 bg-positive/10 font-mono text-positive"
+          >
             +{formatCurrency(dailyGainAmount)} · +{dailyGainPercent.toFixed(1)}%
             today
-          </span>
+          </Badge>
         )}
       </div>
     </div>

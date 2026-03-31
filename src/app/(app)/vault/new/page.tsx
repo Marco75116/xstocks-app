@@ -7,9 +7,10 @@ import { Cell, Pie, PieChart } from "recharts";
 import { ContentLayout } from "@/components/ContentLayout";
 import { StockLogo } from "@/components/StockLogo";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { getStockByTicker } from "@/lib/data";
 
 const previewAllocations = [
@@ -48,31 +50,31 @@ export default function NewVaultPage() {
     <ContentLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
-          <h1 className="text-sm font-semibold">New Vault</h1>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/">
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
+          <h1 className="text-lg font-semibold">New Vault</h1>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-3">
-            <p className="text-[11px] text-muted-foreground">
+            <Label htmlFor="vault-prompt">
               What do you want your money to do? Describe it in your own
               words...
-            </p>
-            <textarea
+            </Label>
+            <Textarea
+              id="vault-prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full resize-none rounded-lg border border-border bg-card p-3.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none"
               rows={6}
+              className="resize-none"
             />
           </div>
 
-          <Card className="overflow-hidden">
-            <CardContent className="space-y-4 p-5">
+          <Card>
+            <CardContent className="space-y-4 pt-6">
               <div className="flex items-center justify-center">
                 <ChartContainer
                   config={chartConfig}
@@ -98,9 +100,9 @@ export default function NewVaultPage() {
                 </ChartContainer>
               </div>
 
-              <h2 className="text-center text-base font-bold">
+              <CardTitle className="text-center">
                 Tech & Bitcoin Growth
-              </h2>
+              </CardTitle>
 
               <div className="space-y-2.5">
                 {previewAllocations.map((alloc, index) => {
@@ -111,7 +113,7 @@ export default function NewVaultPage() {
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="flex size-5 items-center justify-center rounded bg-muted font-mono text-[10px] font-semibold text-muted-foreground">
+                        <span className="flex size-5 items-center justify-center rounded-md bg-muted font-mono text-xs font-semibold text-muted-foreground">
                           {index + 1}
                         </span>
                         <StockLogo
@@ -120,11 +122,11 @@ export default function NewVaultPage() {
                           logo={stock?.logo}
                           size="sm"
                         />
-                        <span className="font-mono text-xs font-medium">
+                        <span className="text-sm font-medium">
                           {stock?.ticker ?? alloc.ticker}
                         </span>
                       </div>
-                      <span className="font-mono text-xs text-muted-foreground">
+                      <span className="text-sm text-muted-foreground">
                         {alloc.weight}%
                       </span>
                     </div>
@@ -132,32 +134,35 @@ export default function NewVaultPage() {
                 })}
               </div>
 
-              <div className="space-y-2.5 border-t border-border pt-4">
-                <Input
-                  id="vault-amount"
-                  type="text"
-                  defaultValue="$1,000.00"
-                  className="rounded-lg border-border bg-background text-center font-mono text-xl font-bold h-12"
-                />
+              <div className="space-y-3 border-t pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="vault-amount">Amount</Label>
+                  <Input
+                    id="vault-amount"
+                    type="text"
+                    defaultValue="$1,000.00"
+                    className="text-center font-mono text-xl font-bold h-12"
+                  />
+                </div>
 
-                <Select defaultValue="weekly">
-                  <SelectTrigger
-                    id="vault-frequency"
-                    className="rounded-lg border-border bg-background"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">Every Day</SelectItem>
-                    <SelectItem value="weekly">Every Weekly</SelectItem>
-                    <SelectItem value="monthly">Every Month</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="vault-frequency">Frequency</Label>
+                  <Select defaultValue="weekly">
+                    <SelectTrigger id="vault-frequency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Every Day</SelectItem>
+                      <SelectItem value="weekly">Every Week</SelectItem>
+                      <SelectItem value="monthly">Every Month</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <Button className="w-full gap-2 rounded-lg" size="lg">
+              <Button className="w-full gap-2" size="lg">
                 Start this Vault
-                <Check className="size-3.5" />
+                <Check className="size-4" />
               </Button>
             </CardContent>
           </Card>

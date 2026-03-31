@@ -97,6 +97,10 @@ Use shadcn/ui for **every** component — never build raw HTML elements when a s
 - Use `cn()` from `@/lib/utils` for class merging
 - Server Components by default, `"use client"` only when needed
 
+## Icons
+
+Use **lucide-react** only for all icons. Never use emoji characters — always use the equivalent Lucide icon instead.
+
 ## Styling
 
 - Tailwind utility classes only (no inline styles, no new CSS files)
