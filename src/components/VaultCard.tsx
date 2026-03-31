@@ -3,12 +3,13 @@ import { StockLogo } from "@/components/StockLogo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getStockByTicker } from "@/lib/data";
-import { formatCurrency } from "@/lib/formatters";
+import { formatAddress, formatCurrency } from "@/lib/formatters";
 
 type VaultSummary = {
   id: string;
   name: string;
   strategy: string;
+  smartAccountAddress: string | null;
   compositions: {
     ticker: string;
     weight: number;
@@ -21,11 +22,11 @@ export function VaultCard({ vault }: { vault: VaultSummary }) {
       <Card className="h-full transition-colors hover:bg-muted/50">
         <CardContent className="space-y-3 p-4">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold">{vault.name}</h3>
               <Badge
                 variant="secondary"
-                className="mt-1 font-mono text-xs uppercase"
+                className="font-mono text-xs uppercase"
               >
                 {vault.strategy}
               </Badge>
@@ -50,6 +51,12 @@ export function VaultCard({ vault }: { vault: VaultSummary }) {
               )}
             </div>
           </div>
+
+          {vault.smartAccountAddress && (
+            <p className="font-mono text-xs text-muted-foreground">
+              {formatAddress(vault.smartAccountAddress)}
+            </p>
+          )}
 
           <div className="flex items-baseline justify-between">
             <p className="font-mono text-xl font-bold">{formatCurrency(0)}</p>

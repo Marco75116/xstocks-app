@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { ContentLayout } from "@/components/ContentLayout";
+import { CopyableAddress } from "@/components/CopyableAddress";
 import { StockLogo } from "@/components/StockLogo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { BuyCard } from "@/components/vault/BuyCard";
 import { VaultHeader } from "@/components/vault/VaultHeader";
 import { getStockByTicker } from "@/lib/data";
 import { api } from "@/lib/eden";
-import { formatAddress, formatCurrency, formatDate } from "@/lib/formatters";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 
 type VaultData = {
   vault: {
@@ -194,9 +195,7 @@ export default function VaultDetailPage({
                     <User className="size-3.5" />
                     <span>Owner</span>
                   </div>
-                  <span className="font-mono font-medium">
-                    {formatAddress(vault.owner)}
-                  </span>
+                  <CopyableAddress address={vault.owner} />
                 </div>
                 {vault.smartAccountAddress && (
                   <div className="flex items-center justify-between">
@@ -204,9 +203,7 @@ export default function VaultDetailPage({
                       <Vault className="size-3.5" />
                       <span>Smart Account</span>
                     </div>
-                    <span className="font-mono font-medium">
-                      {formatAddress(vault.smartAccountAddress)}
-                    </span>
+                    <CopyableAddress address={vault.smartAccountAddress} />
                   </div>
                 )}
                 {vault.dcaAmount && (
