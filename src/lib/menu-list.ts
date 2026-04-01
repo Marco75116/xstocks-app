@@ -1,9 +1,9 @@
 import {
   Clock,
+  Headset,
   Home,
   type LucideIcon,
   PlusCircle,
-  Settings,
   Vault,
 } from "lucide-react";
 
@@ -19,6 +19,7 @@ type Menu = {
   active: boolean;
   icon: LucideIcon;
   submenus: Submenu[];
+  external?: boolean;
 };
 
 type Group = {
@@ -67,14 +68,15 @@ export function getMenuList(pathname: string): Group[] {
       ],
     },
     {
-      groupLabel: "Account",
+      groupLabel: "",
       menus: [
         {
-          href: "/settings",
-          label: "Settings",
-          active: pathname.startsWith("/settings"),
-          icon: Settings,
+          href: "https://t.me/marcopoloo33",
+          label: "Support",
+          active: false,
+          icon: Headset,
           submenus: [],
+          external: true,
         },
       ],
     },
