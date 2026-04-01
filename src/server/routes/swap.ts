@@ -132,7 +132,7 @@ async function submitOneInchOrder(
     return { buyToken, error: "1inch API key not configured" };
   }
 
-  const apiUrl = "https://api.1inch.dev/orderbook/v4.2/1";
+  const apiUrl = "https://api.1inch.dev/orderbook/v4.1/1";
   console.info(`[swap] 1inch request URL: ${apiUrl}`);
   console.info(`[swap] 1inch payload:`, JSON.stringify(payload, null, 2));
 

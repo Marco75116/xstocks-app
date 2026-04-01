@@ -63,6 +63,7 @@ function formatTokenBalance(raw: bigint, decimals: number): string {
 }
 
 const TOKEN_DECIMALS = 18;
+const USDC_DECIMALS = 6;
 
 function WithdrawRow({
   comp,
@@ -70,22 +71,24 @@ function WithdrawRow({
   smartAccountAddress,
   vaultId,
   chainId,
+  decimals = TOKEN_DECIMALS,
 }: {
   comp: Composition;
   rawBalance: bigint;
   smartAccountAddress: string;
   vaultId: string;
   chainId: number;
+  decimals?: number;
 }) {
   const chainConfig = getChainConfig(chainId);
   const wagmiConfig = useConfig();
-  const stock = getStockByTicker(comp.ticker);
+  const stock = comp.ticker === "USDC" ? null : getStockByTicker(comp.ticker);
   const { address: connectedAddress, connector } = useAccount();
   const [amount, setAmount] = useState("");
   const [isMax, setIsMax] = useState(false);
   const submittedAmount = useRef("");
   const hasBalance = rawBalance > BigInt(0);
-  const displayBalance = formatTokenBalance(rawBalance, TOKEN_DECIMALS);
+  const displayBalance = formatTokenBalance(rawBalance, decimals);
 
   const {
     writeContract,
@@ -163,7 +166,7 @@ function WithdrawRow({
   const parsedRaw = isMax
     ? rawBalance
     : amount
-      ? parseDecimalToBigInt(amount, TOKEN_DECIMALS)
+      ? parseDecimalToBigInt(amount, decimals)
       : BigInt(0);
   const isValid = parsedRaw > BigInt(0) && parsedRaw <= rawBalance;
   const isLoading = isSigning || isConfirming;
@@ -208,16 +211,26 @@ function WithdrawRow({
     <div className="space-y-2 px-1 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <StockLogo
-            ticker={comp.ticker}
-            color={stock?.color ?? "#666"}
-            logo={stock?.logo}
-            size="sm"
-          />
+          {comp.ticker === "USDC" ? (
+            <div className="flex items-center justify-center size-6 rounded-full bg-[#2775CA] text-white text-[10px] font-bold">
+              $
+            </div>
+          ) : (
+            <StockLogo
+              ticker={comp.ticker}
+              color={stock?.color ?? "#666"}
+              logo={stock?.logo}
+              size="sm"
+            />
+          )}
           <div>
-            <p className="text-sm font-medium">{stock?.name ?? comp.ticker}</p>
+            <p className="text-sm font-medium">
+              {comp.ticker === "USDC" ? "USDC" : (stock?.name ?? comp.ticker)}
+            </p>
             <p className="text-xs text-muted-foreground">
-              {hasBalance ? `${displayBalance} tokens` : "No balance"}
+              {hasBalance
+                ? `${displayBalance} ${comp.ticker === "USDC" ? "USDC" : "tokens"}`
+                : "No balance"}
             </p>
           </div>
         </div>
@@ -299,7 +312,15 @@ export function WithdrawDialog({
 
   const account = smartAccountAddress as `0x${string}`;
 
-  const contracts = compositions.map((comp) => ({
+  const usdcComposition: Composition = {
+    ticker: "USDC",
+    tokenAddress: chainConfig.usdc,
+    weight: 0,
+  };
+
+  const allTokens = [usdcComposition, ...compositions];
+
+  const contracts = allTokens.map((comp) => ({
     address: comp.tokenAddress as `0x${string}`,
     abi: erc20Abi,
     functionName: "balanceOf" as const,
@@ -347,7 +368,7 @@ export function WithdrawDialog({
           </div>
         ) : (
           <div>
-            {compositions.map((comp, i) => {
+            {allTokens.map((comp, i) => {
               const result = data?.[i];
               const rawBalance =
                 result?.status === "success"
@@ -363,6 +384,9 @@ export function WithdrawDialog({
                     smartAccountAddress={smartAccountAddress}
                     vaultId={vaultId}
                     chainId={chainId}
+                    decimals={
+                      comp.ticker === "USDC" ? USDC_DECIMALS : TOKEN_DECIMALS
+                    }
                   />
                 </div>
               );

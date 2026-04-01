@@ -28,7 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { StrategyOptionCard } from "@/components/vault-wizard/StrategyOptionCard";
 import { VaultReviewCard } from "@/components/vault-wizard/VaultReviewCard";
 import { useChain } from "@/lib/chain-context";
-import { getStockByTicker } from "@/lib/data";
+import { getStockByTicker, getStocksByChainId } from "@/lib/data";
 import { api } from "@/lib/eden";
 
 const strategies = [
@@ -74,10 +74,13 @@ export function StrategyStep({
     setCreating(true);
     setError(null);
 
+    const chainStocks = getStocksByChainId(chainId);
     const allocations = state.selectedTickers
       .filter((ticker) => (state.allocations[ticker] ?? 0) > 0)
       .map((ticker) => {
-        const stock = getStockByTicker(ticker);
+        const stock =
+          chainStocks.find((s) => s.ticker === ticker) ??
+          getStockByTicker(ticker);
         return {
           ticker,
           tokenAddress: stock?.address ?? "",
