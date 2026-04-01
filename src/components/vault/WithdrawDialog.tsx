@@ -57,25 +57,39 @@ function WithdrawRow({
     reset,
   } = useWriteContract();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash: txHash,
-      chainId: INK_CHAIN_ID,
-      query: { enabled: !!txHash },
-    });
+  const {
+    data: receipt,
+    isLoading: isConfirming,
+    isSuccess: receiptFetched,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    chainId: INK_CHAIN_ID,
+    query: { enabled: !!txHash },
+  });
+
+  const isConfirmed = receiptFetched && receipt?.status === "success";
+  const isReverted = receiptFetched && receipt?.status === "reverted";
 
   useEffect(() => {
-    if (isConfirmed && txHash) {
-      api.withdraw.post({
-        vaultId,
-        ticker: comp.ticker,
-        tokenAddress: comp.tokenAddress,
-        amount: submittedAmount.current,
-        txHash,
-      });
-      setAmount("");
-    }
-  }, [isConfirmed, txHash, vaultId, comp.ticker, comp.tokenAddress]);
+    if (!receiptFetched || !txHash) return;
+    api.withdraw.post({
+      vaultId,
+      ticker: comp.ticker,
+      tokenAddress: comp.tokenAddress,
+      amount: submittedAmount.current,
+      txHash,
+      status: isReverted ? "failed" : "confirmed",
+    });
+    if (isConfirmed) setAmount("");
+  }, [
+    receiptFetched,
+    txHash,
+    vaultId,
+    comp.ticker,
+    comp.tokenAddress,
+    isReverted,
+    isConfirmed,
+  ]);
 
   const parsedAmount = Number.parseFloat(amount);
   const isValid =
@@ -150,7 +164,7 @@ function WithdrawRow({
           </div>
           <Button
             size="sm"
-            variant="outline"
+            variant={isReverted ? "destructive" : "outline"}
             className="gap-1.5 shrink-0"
             disabled={!isValid || isLoading}
             onClick={handleWithdraw}
@@ -168,13 +182,20 @@ function WithdrawRow({
                 ? "Confirming"
                 : isConfirmed
                   ? "Done"
-                  : "Withdraw"}
+                  : isReverted
+                    ? "Failed"
+                    : "Withdraw"}
           </Button>
         </div>
       )}
       {writeError && (
         <p className="text-xs font-medium text-destructive">
           {writeError.message.split("\n")[0]}
+        </p>
+      )}
+      {isReverted && (
+        <p className="text-xs font-medium text-destructive">
+          Transaction reverted on-chain. Only the vault owner can withdraw.
         </p>
       )}
       {isConfirmed && (

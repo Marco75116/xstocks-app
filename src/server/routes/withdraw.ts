@@ -5,7 +5,7 @@ import { withdrawOrders } from "@/server/db/schema";
 export const withdrawRoutes = new Elysia().post(
   "/withdraw",
   async ({ body }) => {
-    const { vaultId, ticker, tokenAddress, amount, txHash } = body;
+    const { vaultId, ticker, tokenAddress, amount, txHash, status } = body;
 
     const [order] = await db
       .insert(withdrawOrders)
@@ -15,7 +15,7 @@ export const withdrawRoutes = new Elysia().post(
         tokenAddress,
         amount,
         txHash,
-        status: "pending",
+        status: status ?? "pending",
       })
       .returning();
 
@@ -28,6 +28,13 @@ export const withdrawRoutes = new Elysia().post(
       tokenAddress: t.String(),
       amount: t.String(),
       txHash: t.Optional(t.String()),
+      status: t.Optional(
+        t.Union([
+          t.Literal("pending"),
+          t.Literal("confirmed"),
+          t.Literal("failed"),
+        ]),
+      ),
     }),
   },
 );
