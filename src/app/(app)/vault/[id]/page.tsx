@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BuyDialog } from "@/components/vault/BuyDialog";
 import { FundDialog } from "@/components/vault/FundDialog";
 import { HoldingsCard } from "@/components/vault/HoldingsCard";
+import { OrdersHistory } from "@/components/vault/OrdersHistory";
 import { VaultHeader } from "@/components/vault/VaultHeader";
 import { getStockByTicker } from "@/lib/data";
 import { api } from "@/lib/eden";
@@ -133,53 +135,67 @@ export default function VaultDetailPage({
           })}
         </div>
 
-        <div className="space-y-6">
-          <HoldingsCard
-            smartAccountAddress={vault.smartAccountAddress}
-            compositions={compositions}
-          />
+        <Tabs defaultValue="holdings">
+          <TabsList>
+            <TabsTrigger value="holdings">Holdings</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <User className="size-3.5" />
-                  <span>Owner</span>
-                </div>
-                <CopyableAddress address={vault.owner} />
-              </div>
-              {vault.smartAccountAddress && (
+          <TabsContent value="holdings">
+            <HoldingsCard
+              smartAccountAddress={vault.smartAccountAddress}
+              compositions={compositions}
+            />
+          </TabsContent>
+
+          <TabsContent value="history">
+            <OrdersHistory vaultId={vault.id} />
+          </TabsContent>
+
+          <TabsContent value="details">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <Vault className="size-3.5" />
-                    <span>Smart Account</span>
+                    <User className="size-3.5" />
+                    <span>Owner</span>
                   </div>
-                  <CopyableAddress address={vault.smartAccountAddress} />
+                  <CopyableAddress address={vault.owner} />
                 </div>
-              )}
-              {vault.dcaAmount && (
+                {vault.smartAccountAddress && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Vault className="size-3.5" />
+                      <span>Smart Account</span>
+                    </div>
+                    <CopyableAddress address={vault.smartAccountAddress} />
+                  </div>
+                )}
+                {vault.dcaAmount && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">DCA Amount</span>
+                    <span className="font-mono font-medium">
+                      ${vault.dcaAmount}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">DCA Amount</span>
-                  <span className="font-mono font-medium">
-                    ${vault.dcaAmount}
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="size-3.5" />
+                    <span>Created</span>
+                  </div>
+                  <span className="font-medium">
+                    {formatDate(vault.createdAt)}
                   </span>
                 </div>
-              )}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="size-3.5" />
-                  <span>Created</span>
-                </div>
-                <span className="font-medium">
-                  {formatDate(vault.createdAt)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </ContentLayout>
   );

@@ -1,11 +1,11 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { decodeEventLog, isAddress } from "viem";
 import { accountFactoryAbi } from "@/lib/abis/accountFactory";
 import { ACCOUNT_FACTORY_ADDRESS } from "@/lib/constants";
 import { getWalletClient, publicClient } from "@/lib/viemClient";
 import { db } from "@/server/db";
-import { vaultCompositions, vaults } from "@/server/db/schema";
+import { buyOrders, vaultCompositions, vaults } from "@/server/db/schema";
 
 export const vaultRoutes = new Elysia()
   .get("/vaults", async () => {
@@ -65,6 +65,32 @@ export const vaultRoutes = new Elysia()
           weight: c.weight,
         })),
       };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+    },
+  )
+  .get(
+    "/vault/:id/orders",
+    async ({ params }) => {
+      const orders = await db
+        .select()
+        .from(buyOrders)
+        .where(eq(buyOrders.vaultId, params.id))
+        .orderBy(desc(buyOrders.createdAt));
+
+      return orders.map((o) => ({
+        id: o.id,
+        ticker: o.ticker,
+        tokenAddress: o.tokenAddress,
+        sellAmountUsdc: o.sellAmountUsdc,
+        orderUid: o.orderUid,
+        status: o.status,
+        error: o.error,
+        createdAt: o.createdAt.toISOString(),
+      }));
     },
     {
       params: t.Object({
