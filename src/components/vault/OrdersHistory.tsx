@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  AlertCircle,
-  ArrowDownLeft,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  ShoppingCart,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StockLogo } from "@/components/StockLogo";
 import { Badge } from "@/components/ui/badge";
@@ -191,7 +184,6 @@ export function OrdersHistory({ vaultId }: { vaultId: string }) {
             statusMap[order.status as keyof typeof statusMap] ??
             buyStatusConfig.submitted;
           const StatusIcon = config.icon;
-          const TypeIcon = order.type === "buy" ? ShoppingCart : ArrowDownLeft;
 
           const externalUrl =
             order.type === "buy" && order.orderUid
@@ -212,12 +204,9 @@ export function OrdersHistory({ vaultId }: { vaultId: string }) {
                     size="md"
                   />
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <TypeIcon className="size-3 text-muted-foreground" />
-                      <p className="text-sm font-semibold">
-                        {stock?.name ?? order.ticker}
-                      </p>
-                    </div>
+                    <p className="text-sm font-semibold">
+                      {stock?.name ?? order.ticker}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {formatDateTime(order.createdAt)}
                     </p>
