@@ -150,30 +150,32 @@ export function BuyDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Buy Order</DialogTitle>
+          <DialogTitle>Confirm Buy Order</DialogTitle>
           <DialogDescription>
-            Enter an amount to split across holdings by weight.
+            {isValid
+              ? `${formatCurrency(parsedAmount)} USDC will be split across ${activeLines.length} asset${activeLines.length > 1 ? "s" : ""}.`
+              : "Enter an amount to split across holdings by weight."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              type="text"
-              inputMode="decimal"
-              placeholder="USDC amount"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value.replace(/[^0-9.]/g, ""));
-                setResult(null);
-              }}
-              className="font-mono focus-visible:ring-0 focus-visible:ring-offset-0"
-              disabled={buying}
-            />
-            <p className="text-xs text-muted-foreground">Min. $10 USDC</p>
-          </div>
+        <div className="space-y-2">
+          <Input
+            type="text"
+            inputMode="decimal"
+            placeholder="USDC amount"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value.replace(/[^0-9.]/g, ""));
+              setResult(null);
+            }}
+            className="font-mono focus-visible:ring-0 focus-visible:ring-offset-0"
+            disabled={buying}
+          />
+          <p className="text-xs text-muted-foreground">Min. $10 USDC</p>
+        </div>
 
-          {isValid && activeLines.length > 0 && (
+        {isValid && activeLines.length > 0 && (
+          <>
             <div className="space-y-1">
               {activeLines.map((line, i) => {
                 const stock = getStockByTicker(line.ticker);
@@ -204,33 +206,33 @@ export function BuyDialog({
                   </div>
                 );
               })}
-
-              {skippedLines.length > 0 && (
-                <p className="text-xs text-muted-foreground pt-1">
-                  {skippedLines.map((l) => l.ticker).join(", ")} skipped (below
-                  $10 minimum).
-                </p>
-              )}
-
-              <Separator />
-
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-sm font-medium">Total</span>
-                <span className="font-mono text-sm font-bold">
-                  {formatCurrency(parsedAmount)}
-                </span>
-              </div>
             </div>
-          )}
 
-          {result && (
-            <p
-              className={`text-sm font-medium ${result.type === "success" ? "text-positive" : "text-destructive"}`}
-            >
-              {result.message}
-            </p>
-          )}
-        </div>
+            {skippedLines.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {skippedLines.map((l) => l.ticker).join(", ")} skipped (below
+                $10 minimum).
+              </p>
+            )}
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Total</span>
+              <span className="font-mono text-sm font-bold">
+                {formatCurrency(parsedAmount)}
+              </span>
+            </div>
+          </>
+        )}
+
+        {result && (
+          <p
+            className={`text-sm font-medium ${result.type === "success" ? "text-positive" : "text-destructive"}`}
+          >
+            {result.message}
+          </p>
+        )}
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
