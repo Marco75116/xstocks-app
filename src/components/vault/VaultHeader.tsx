@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleDollarSign, Layers, TrendingUp, Wallet } from "lucide-react";
+import { CircleDollarSign, Wallet } from "lucide-react";
 import { useReadContracts } from "wagmi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,13 +42,9 @@ function StatCard({
 export function VaultHeader({
   smartAccountAddress,
   compositions,
-  strategy,
-  dcaFrequency,
 }: {
   smartAccountAddress: string;
   compositions: Composition[];
-  strategy: string;
-  dcaFrequency: string | null;
 }) {
   const account = smartAccountAddress as `0x${string}`;
 
@@ -86,56 +82,27 @@ export function VaultHeader({
     }
   }
 
-  const totalValue = usdcBalance + stockValue;
-
-  const strategyLabel =
-    strategy === "dca"
-      ? `DCA ${dcaFrequency ? `\u00B7 ${dcaFrequency}` : ""}`
-      : "Manual";
-
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">
-          Total Vault Value
-        </p>
+    <div className="grid grid-cols-2 gap-3">
+      <StatCard icon={Wallet} label="USDC Available">
         {isLoading ? (
-          <Skeleton className="h-10 w-48" />
+          <Skeleton className="mt-0.5 h-5 w-20" />
         ) : (
-          <p className="font-mono text-4xl font-bold tracking-tight">
-            {formatCurrency(totalValue)}
+          <p className="font-mono text-sm font-semibold">
+            {formatCurrency(usdcBalance)}
           </p>
         )}
-      </div>
+      </StatCard>
 
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard icon={Wallet} label="USDC Available">
-          {isLoading ? (
-            <Skeleton className="mt-0.5 h-5 w-20" />
-          ) : (
-            <p className="font-mono text-sm font-semibold">
-              {formatCurrency(usdcBalance)}
-            </p>
-          )}
-        </StatCard>
-
-        <StatCard icon={CircleDollarSign} label="Invested">
-          {isLoading ? (
-            <Skeleton className="mt-0.5 h-5 w-20" />
-          ) : (
-            <p className="font-mono text-sm font-semibold">
-              {formatCurrency(stockValue)}
-            </p>
-          )}
-        </StatCard>
-
-        <StatCard
-          icon={strategy === "dca" ? TrendingUp : Layers}
-          label="Strategy"
-        >
-          <p className="text-sm font-semibold capitalize">{strategyLabel}</p>
-        </StatCard>
-      </div>
+      <StatCard icon={CircleDollarSign} label="Invested">
+        {isLoading ? (
+          <Skeleton className="mt-0.5 h-5 w-20" />
+        ) : (
+          <p className="font-mono text-sm font-semibold">
+            {formatCurrency(stockValue)}
+          </p>
+        )}
+      </StatCard>
     </div>
   );
 }

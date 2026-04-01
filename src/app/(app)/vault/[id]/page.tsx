@@ -1,8 +1,18 @@
 "use client";
 
-import { Calendar, Coins, Loader2, User, Vault } from "lucide-react";
+import {
+  Calendar,
+  Coins,
+  Layers,
+  Loader2,
+  TrendingUp,
+  User,
+  Vault,
+  Wallet,
+} from "lucide-react";
 import { notFound } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { useReadContracts } from "wagmi";
 import { ConnectGuard } from "@/components/ConnectGuard";
 import { ContentLayout } from "@/components/ContentLayout";
 import { CopyableAddress } from "@/components/CopyableAddress";
@@ -10,16 +20,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BuyDialog } from "@/components/vault/BuyDialog";
 import { FundDialog } from "@/components/vault/FundDialog";
-import { HoldingsCard } from "@/components/vault/HoldingsCard";
 import { OrdersHistory } from "@/components/vault/OrdersHistory";
-import { VaultHeader } from "@/components/vault/VaultHeader";
+import { VaultHistoryChart } from "@/components/vault/VaultHistoryChart";
+import { VaultValueChart } from "@/components/vault/VaultValueChart";
 import { WithdrawDialog } from "@/components/vault/WithdrawDialog";
-import { getStockByTicker } from "@/lib/data";
+import { erc20Abi } from "@/lib/abis/erc20";
+import { INK_CHAIN_ID, USDC_ADDRESS } from "@/lib/constants";
 import { api } from "@/lib/eden";
-import { formatDate } from "@/lib/formatters";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 
 type VaultData = {
   vault: {
@@ -65,6 +75,28 @@ export default function VaultDetailPage({
 
     fetchVault();
   }, [id]);
+
+  const smartAccount = data?.vault.smartAccountAddress as
+    | `0x${string}`
+    | undefined;
+
+  const { data: usdcData } = useReadContracts({
+    contracts: smartAccount
+      ? [
+          {
+            address: USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: "balanceOf" as const,
+            args: [smartAccount],
+            chainId: INK_CHAIN_ID,
+          },
+        ]
+      : [],
+    query: { enabled: !!smartAccount },
+  });
+
+  const usdcBalance =
+    usdcData?.[0]?.status === "success" ? Number(usdcData[0].result) / 1e6 : 0;
 
   if (error) {
     notFound();
@@ -120,95 +152,85 @@ export default function VaultDetailPage({
             )}
           </div>
 
-          {vault.smartAccountAddress && (
-            <VaultHeader
-              smartAccountAddress={vault.smartAccountAddress}
-              compositions={compositions}
-              strategy={vault.strategy}
-              dcaFrequency={vault.dcaFrequency}
-            />
-          )}
-
-          <div className="flex h-1.5 gap-px overflow-hidden rounded-full">
-            {compositions.map((comp) => {
-              const stock = getStockByTicker(comp.ticker);
-              return (
-                <div
-                  key={comp.ticker}
-                  className="h-full"
-                  style={{
-                    width: `${comp.weight}%`,
-                    backgroundColor: stock?.color ?? "#666",
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Tabs defaultValue="holdings">
-              <TabsList>
-                <TabsTrigger value="holdings">Holdings</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="holdings">
-                <HoldingsCard
-                  smartAccountAddress={vault.smartAccountAddress}
-                  compositions={compositions}
-                />
-              </TabsContent>
-
-              <TabsContent value="details">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-semibold">
-                      Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <User className="size-3.5" />
-                        <span>Owner</span>
-                      </div>
-                      <CopyableAddress address={vault.owner} />
-                    </div>
-                    {vault.smartAccountAddress && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Vault className="size-3.5" />
-                          <span>Smart Account</span>
-                        </div>
-                        <CopyableAddress address={vault.smartAccountAddress} />
-                      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[4fr_8fr_8fr]">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    {vault.strategy === "dca" ? (
+                      <TrendingUp className="size-3.5" />
+                    ) : (
+                      <Layers className="size-3.5" />
                     )}
-                    {vault.dcaAmount && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                          DCA Amount
-                        </span>
-                        <span className="font-mono font-medium">
-                          ${vault.dcaAmount}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="size-3.5" />
-                        <span>Created</span>
-                      </div>
-                      <span className="font-medium">
-                        {formatDate(vault.createdAt)}
-                      </span>
+                    <span>Strategy</span>
+                  </div>
+                  <span className="font-medium capitalize">
+                    {vault.strategy === "dca"
+                      ? `DCA${vault.dcaFrequency ? ` \u00B7 ${vault.dcaFrequency}` : ""}`
+                      : "Manual"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="size-3.5" />
+                    <span>Owner</span>
+                  </div>
+                  <CopyableAddress address={vault.owner} />
+                </div>
+                {vault.smartAccountAddress && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Vault className="size-3.5" />
+                      <span>Smart Account</span>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    <CopyableAddress address={vault.smartAccountAddress} />
+                  </div>
+                )}
+                {vault.dcaAmount && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">DCA Amount</span>
+                    <span className="font-mono font-medium">
+                      ${vault.dcaAmount}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="size-3.5" />
+                    <span>Created</span>
+                  </div>
+                  <span className="font-medium">
+                    {formatDate(vault.createdAt)}
+                  </span>
+                </div>
+                {vault.smartAccountAddress && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Wallet className="size-3.5" />
+                      <span>USDC Available</span>
+                    </div>
+                    <span className="font-mono font-medium">
+                      {formatCurrency(usdcBalance)}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {vault.smartAccountAddress && (
+              <VaultValueChart
+                smartAccountAddress={vault.smartAccountAddress}
+                compositions={compositions}
+              />
+            )}
 
             <OrdersHistory vaultId={vault.id} />
           </div>
+
+          <VaultHistoryChart />
         </div>
       </ContentLayout>
     </ConnectGuard>
