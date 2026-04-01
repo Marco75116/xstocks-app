@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleDollarSign, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { StockLogo } from "@/components/StockLogo";
 import { Button } from "@/components/ui/button";
@@ -238,12 +238,8 @@ export function BuyDialog({
             onClick={handleConfirm}
             disabled={!isValid || buying}
           >
-            {buying ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <CircleDollarSign className="size-4" />
-            )}
-            {buying ? "Submitting..." : "Confirm Buy"}
+            {buying && <Loader2 className="size-4 animate-spin" />}
+            {buying ? "Submitting..." : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>
