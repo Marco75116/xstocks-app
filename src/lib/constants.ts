@@ -1,5 +1,5 @@
 export const ACCOUNT_FACTORY_ADDRESS =
-  "0x52ce41F6B4e95b6891F93Ad85165b525412e1362" as const;
+  "0x0144029bc9Db2D1b13d9216cad7870d567f08Fda" as const;
 
 export const OPERATOR_ADDRESS =
   "0xB351edfb846d7c26Aed130c2DE66151c1efF5236" as const;

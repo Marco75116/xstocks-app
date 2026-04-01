@@ -72,6 +72,7 @@ export const userAccountAbi = [
     inputs: [
       { name: "token", type: "address", internalType: "address" },
       { name: "amount", type: "uint256", internalType: "uint256" },
+      { name: "to", type: "address", internalType: "address" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -79,7 +80,10 @@ export const userAccountAbi = [
   {
     type: "function",
     name: "withdrawEth",
-    inputs: [{ name: "amount", type: "uint256", internalType: "uint256" }],
+    inputs: [
+      { name: "amount", type: "uint256", internalType: "uint256" },
+      { name: "to", type: "address", internalType: "address" },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -115,6 +119,19 @@ export const userAccountAbi = [
       },
       {
         name: "newOperator",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "event",
+    name: "OwnerSet",
+    anonymous: false,
+    inputs: [
+      {
+        name: "owner",
         type: "address",
         indexed: true,
         internalType: "address",

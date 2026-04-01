@@ -12,6 +12,7 @@ export const vaults = pgTable("vaults", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   owner: text("owner").notNull(),
+  saltIndex: integer("salt_index").notNull().default(0),
   smartAccountAddress: text("smart_account_address"),
   strategy: text("strategy", { enum: ["manual", "dca"] }).notNull(),
   dcaFrequency: text("dca_frequency", {
