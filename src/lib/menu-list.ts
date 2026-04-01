@@ -1,4 +1,4 @@
-import { Clock, Home, type LucideIcon, Settings, Vault } from "lucide-react";
+import { Clock, Headset, Home, type LucideIcon, Vault } from "lucide-react";
 
 type Submenu = {
   href: string;
@@ -12,6 +12,7 @@ type Menu = {
   active: boolean;
   icon: LucideIcon;
   submenus: Submenu[];
+  external?: boolean;
 };
 
 type Group = {
@@ -53,14 +54,15 @@ export function getMenuList(pathname: string): Group[] {
       ],
     },
     {
-      groupLabel: "Account",
+      groupLabel: "",
       menus: [
         {
-          href: "/settings",
-          label: "Settings",
-          active: pathname.startsWith("/settings"),
-          icon: Settings,
+          href: "https://t.me/marcopoloo33",
+          label: "Support",
+          active: false,
+          icon: Headset,
           submenus: [],
+          external: true,
         },
       ],
     },

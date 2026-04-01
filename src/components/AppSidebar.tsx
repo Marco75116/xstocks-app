@@ -60,17 +60,28 @@ export function AppSidebar() {
             {groupLabel && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {menus.map(({ href, label, icon: Icon, active }) => (
+                {menus.map(({ href, label, icon: Icon, active, external }) => (
                   <SidebarMenuItem key={label}>
                     <SidebarMenuButton
                       asChild
                       isActive={active}
                       tooltip={label}
                     >
-                      <Link href={href}>
-                        <Icon />
-                        <span>{label}</span>
-                      </Link>
+                      {external ? (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Icon />
+                          <span>{label}</span>
+                        </a>
+                      ) : (
+                        <Link href={href}>
+                          <Icon />
+                          <span>{label}</span>
+                        </Link>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
