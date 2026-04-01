@@ -175,7 +175,10 @@ export const STOCKS: Stock[] = [
 ];
 
 export function getStockByTicker(ticker: string): Stock | undefined {
-  return STOCKS.find((s) => s.ticker === ticker);
+  return (
+    STOCKS.find((s) => s.ticker === ticker) ??
+    ETHEREUM_STOCKS.find((s) => s.ticker === ticker)
+  );
 }
 
 export { ETHEREUM_STOCKS };

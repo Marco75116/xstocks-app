@@ -6,6 +6,8 @@ export const ONEINCH_ROUTER_ADDRESS =
 export const ETH_USDC_ADDRESS =
   "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" as const;
 
+const ZERO_ADDRESS: Address = "0x0000000000000000000000000000000000000000";
+
 export const MIN_SELL_AMOUNT = BigInt(10_000_000);
 
 export const ONEINCH_ORDER_TYPES = {
@@ -68,7 +70,7 @@ export function buildOneInchOrder(params: {
   return {
     salt,
     maker: params.userAccountAddress,
-    receiver: params.userAccountAddress,
+    receiver: ZERO_ADDRESS,
     makerAsset: ETH_USDC_ADDRESS,
     takerAsset: params.buyToken,
     makingAmount: params.sellAmount,
@@ -92,6 +94,7 @@ type OneInchApiOrder = {
     makingAmount: string;
     takingAmount: string;
     makerTraits: string;
+    extension: string;
   };
 };
 
@@ -112,6 +115,7 @@ export function orderToApiPayload(
       makingAmount: order.makingAmount.toString(),
       takingAmount: order.takingAmount.toString(),
       makerTraits: order.makerTraits.toString(),
+      extension: "0x",
     },
   };
 }

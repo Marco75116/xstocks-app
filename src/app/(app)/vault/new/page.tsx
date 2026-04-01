@@ -32,7 +32,8 @@ export type WizardAction =
   | { type: "SET_STRATEGY"; strategy: WizardState["strategy"] }
   | { type: "SET_DCA_FREQUENCY"; frequency: WizardState["dcaFrequency"] }
   | { type: "SET_AMOUNT"; amount: number }
-  | { type: "GO_TO_STEP"; step: 1 | 2 | 3 };
+  | { type: "GO_TO_STEP"; step: 1 | 2 | 3 }
+  | { type: "RESET_SELECTIONS" };
 
 function equalizeAllocations(tickers: string[]): Record<string, number> {
   if (tickers.length === 0) return {};
@@ -121,6 +122,14 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, dcaFrequency: action.frequency };
     case "SET_AMOUNT":
       return { ...state, amount: action.amount };
+    case "RESET_SELECTIONS":
+      return {
+        ...state,
+        currentStep: 1,
+        direction: "backward" as const,
+        selectedTickers: [],
+        allocations: {},
+      };
   }
 }
 
