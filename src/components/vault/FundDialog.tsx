@@ -1,12 +1,21 @@
 "use client";
 
-import { Check, Loader2, Plus, SendHorizontal, Wallet } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Copy,
+  Loader2,
+  Plus,
+  QrCode,
+  SendHorizontal,
+  Wallet,
+} from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { useCallback, useEffect, useState } from "react";
 import {
   useAccount,
-  useChainId,
   useReadContract,
-  useSwitchChain,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -25,15 +34,74 @@ import { erc20Abi } from "@/lib/abis/erc20";
 import { INK_CHAIN_ID, USDC_ADDRESS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/formatters";
 
-export function FundDialog({
+type FundMethod = "select" | "wallet" | "deposit";
+
+function MethodOption({
+  icon,
+  title,
+  description,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent"
+    >
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+        {icon}
+      </div>
+      <div className="flex-1 space-y-0.5">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <ChevronRight className="size-4 text-muted-foreground" />
+    </button>
+  );
+}
+
+function DepositAddressView({ address }: { address: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [address]);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className="rounded-xl bg-white p-3">
+        <QRCodeSVG value={address} size={180} />
+      </div>
+      <p className="text-sm text-muted-foreground">USDC deposit address</p>
+      <button
+        type="button"
+        onClick={copy}
+        className="flex w-full items-center gap-2 rounded-lg bg-muted px-4 py-3 font-mono text-xs transition-colors hover:bg-muted/80"
+      >
+        <span className="flex-1 truncate">{address}</span>
+        {copied ? (
+          <Check className="size-4 shrink-0 text-positive" />
+        ) : (
+          <Copy className="size-4 shrink-0 text-muted-foreground" />
+        )}
+      </button>
+    </div>
+  );
+}
+
+function WalletTransferView({
   smartAccountAddress,
-  children,
 }: {
   smartAccountAddress: string;
-  children?: React.ReactNode;
 }) {
   const { address, isConnected } = useAccount();
-  const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [connectOpen, setConnectOpen] = useState(false);
 
@@ -67,14 +135,6 @@ export function FundDialog({
       refetchBalance();
     }
   }, [isConfirmed, refetchBalance]);
-
-  function handleOpenChange(nextOpen: boolean) {
-    setOpen(nextOpen);
-    if (!nextOpen) {
-      setAmount("");
-      reset();
-    }
-  }
 
   const formattedBalance =
     walletBalance !== undefined ? Number(walletBalance) / 1e6 : 0;
@@ -110,6 +170,107 @@ export function FundDialog({
     }
   }
 
+  if (!isConnected) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Connect your wallet to fund this vault with USDC.
+        </p>
+        <Button className="w-full gap-1.5" onClick={() => setConnectOpen(true)}>
+          <Wallet className="size-4" />
+          Connect Wallet
+        </Button>
+        <ConnectWalletDialog open={connectOpen} onOpenChange={setConnectOpen} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Wallet Balance</span>
+        <button
+          type="button"
+          onClick={handleMax}
+          className="font-mono font-medium text-primary hover:underline"
+        >
+          {formatCurrency(formattedBalance)} USDC
+        </button>
+      </div>
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          inputMode="decimal"
+          placeholder="USDC amount"
+          value={amount}
+          onChange={(e) => {
+            setAmount(e.target.value.replace(/[^0-9.]/g, ""));
+            if (isConfirmed) reset();
+          }}
+          className="font-mono focus-visible:ring-0 focus-visible:ring-offset-0"
+          disabled={isLoading}
+        />
+        <Button
+          className="gap-1.5 shrink-0"
+          disabled={!isValid || isLoading}
+          onClick={handleFund}
+        >
+          {isLoading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : isConfirmed ? (
+            <Check className="size-4" />
+          ) : (
+            <SendHorizontal className="size-4" />
+          )}
+          {isSigning ? "Sign" : isConfirming ? "Confirming" : "Fund"}
+        </Button>
+      </div>
+      {isConfirmed && (
+        <p className="text-sm font-medium text-positive">
+          Vault funded successfully
+        </p>
+      )}
+      {writeError && (
+        <p className="text-sm font-medium text-destructive">
+          {writeError.message.split("\n")[0]}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function FundDialog({
+  smartAccountAddress,
+  children,
+}: {
+  smartAccountAddress: string;
+  children?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [method, setMethod] = useState<FundMethod>("select");
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setMethod("select");
+    }
+  }
+
+  const titles: Record<FundMethod, { title: string; description: string }> = {
+    select: {
+      title: "Fund Vault",
+      description: "Select your funding method.",
+    },
+    wallet: {
+      title: "Send from Wallet",
+      description: "Transfer USDC from your connected wallet.",
+    },
+    deposit: {
+      title: "Deposit Address",
+      description: "Send USDC to this address on Ink network.",
+    },
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -121,80 +282,44 @@ export function FundDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Fund Vault</DialogTitle>
-          <DialogDescription>
-            Transfer USDC from your wallet to this vault.
-          </DialogDescription>
-        </DialogHeader>
-
-        {!isConnected ? (
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Connect your wallet to fund this vault with USDC.
-            </p>
-            <Button
-              className="w-full gap-1.5"
-              onClick={() => setConnectOpen(true)}
-            >
-              <Wallet className="size-4" />
-              Connect Wallet
-            </Button>
-            <ConnectWalletDialog
-              open={connectOpen}
-              onOpenChange={setConnectOpen}
-            />
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Wallet Balance</span>
+          <DialogTitle className="flex items-center gap-2">
+            {method !== "select" && (
               <button
                 type="button"
-                onClick={handleMax}
-                className="font-mono font-medium text-primary hover:underline"
+                onClick={() => setMethod("select")}
+                className="rounded-md p-0.5 transition-colors hover:bg-accent"
               >
-                {formatCurrency(formattedBalance)} USDC
+                <ArrowLeft className="size-4" />
               </button>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                inputMode="decimal"
-                placeholder="USDC amount"
-                value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value.replace(/[^0-9.]/g, ""));
-                  if (isConfirmed) reset();
-                }}
-                className="font-mono focus-visible:ring-0 focus-visible:ring-offset-0"
-                disabled={isLoading}
-              />
-              <Button
-                className="gap-1.5 shrink-0"
-                disabled={!isValid || isLoading}
-                onClick={handleFund}
-              >
-                {isLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : isConfirmed ? (
-                  <Check className="size-4" />
-                ) : (
-                  <SendHorizontal className="size-4" />
-                )}
-                {isSigning ? "Sign" : isConfirming ? "Confirming" : "Fund"}
-              </Button>
-            </div>
-            {isConfirmed && (
-              <p className="text-sm font-medium text-positive">
-                Vault funded successfully
-              </p>
             )}
-            {writeError && (
-              <p className="text-sm font-medium text-destructive">
-                {writeError.message.split("\n")[0]}
-              </p>
-            )}
+            {titles[method].title}
+          </DialogTitle>
+          <DialogDescription>{titles[method].description}</DialogDescription>
+        </DialogHeader>
+
+        {method === "select" && (
+          <div className="space-y-2">
+            <MethodOption
+              icon={<Wallet className="size-4" />}
+              title="Send from your wallet"
+              description="Transfer USDC from your connected wallet to this vault."
+              onClick={() => setMethod("wallet")}
+            />
+            <MethodOption
+              icon={<QrCode className="size-4" />}
+              title="Share deposit address"
+              description="Send USDC to this vault's deposit address from any wallet."
+              onClick={() => setMethod("deposit")}
+            />
           </div>
+        )}
+
+        {method === "wallet" && (
+          <WalletTransferView smartAccountAddress={smartAccountAddress} />
+        )}
+
+        {method === "deposit" && (
+          <DepositAddressView address={smartAccountAddress} />
         )}
       </DialogContent>
     </Dialog>

@@ -1,11 +1,4 @@
-import {
-  Clock,
-  Home,
-  type LucideIcon,
-  PlusCircle,
-  Settings,
-  Vault,
-} from "lucide-react";
+import { Clock, Home, type LucideIcon, Settings, Vault } from "lucide-react";
 
 type Submenu = {
   href: string;
@@ -43,13 +36,6 @@ export function getMenuList(pathname: string): Group[] {
           label: "Activity",
           active: pathname.startsWith("/activity"),
           icon: Clock,
-          submenus: [],
-        },
-        {
-          href: "/add-funds",
-          label: "Add Funds",
-          active: pathname.startsWith("/add-funds"),
-          icon: PlusCircle,
           submenus: [],
         },
       ],
