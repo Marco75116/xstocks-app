@@ -14,7 +14,13 @@ export {
   type PortfolioHolding,
   type PortfolioSnapshot,
 } from "./portfolio";
-export { getStockByTicker, STOCKS, type Stock } from "./stocks";
+export {
+  ETHEREUM_STOCKS,
+  getStockByTicker,
+  getStocksByChainId,
+  STOCKS,
+  type Stock,
+} from "./stocks";
 export {
   getVaultById,
   VAULTS,

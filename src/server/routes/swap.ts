@@ -9,7 +9,7 @@ import {
   MIN_SELL_AMOUNT,
   orderToApiPayload,
 } from "@/lib/cow";
-import { STOCKS } from "@/lib/data/stocks";
+import { getStocksByChainId, STOCKS } from "@/lib/data/stocks";
 import {
   buildOneInchOrder,
   ONEINCH_DOMAIN,
@@ -22,18 +22,23 @@ import { buyOrder } from "@/server/db/schema";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-const validBuyTokens = new Set(
-  STOCKS.filter((s) => s.address !== ZERO_ADDRESS).map((s) =>
-    s.address.toLowerCase(),
-  ),
-);
+function getValidBuyTokens(chainId: number): Set<string> {
+  const stocks = getStocksByChainId(chainId);
+  return new Set(
+    stocks
+      .filter((s) => s.address !== ZERO_ADDRESS)
+      .map((s) => s.address.toLowerCase()),
+  );
+}
 
-const tickerByAddress = new Map(
-  STOCKS.filter((s) => s.address !== ZERO_ADDRESS).map((s) => [
-    s.address.toLowerCase(),
-    s.ticker,
-  ]),
-);
+function getTickerByAddress(chainId: number): Map<string, string> {
+  const stocks = getStocksByChainId(chainId);
+  return new Map(
+    stocks
+      .filter((s) => s.address !== ZERO_ADDRESS)
+      .map((s) => [s.address.toLowerCase(), s.ticker]),
+  );
+}
 
 type OrderResult = {
   buyToken: string;
@@ -127,7 +132,11 @@ async function submitOneInchOrder(
     return { buyToken, error: "1inch API key not configured" };
   }
 
-  const response = await fetch("https://api.1inch.dev/orderbook/v4.2/1", {
+  const apiUrl = "https://api.1inch.dev/orderbook/v4.2/1";
+  console.info(`[swap] 1inch request URL: ${apiUrl}`);
+  console.info(`[swap] 1inch payload:`, JSON.stringify(payload, null, 2));
+
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -140,7 +149,9 @@ async function submitOneInchOrder(
     const errorBody = await response.text();
     console.error(
       `[swap] 1inch API error for ${buyToken} (${response.status}):`,
-      errorBody,
+      `URL: ${apiUrl}`,
+      `Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
+      `Response body: ${errorBody}`,
     );
     let description = "1inch API order submission failed";
     try {
@@ -176,19 +187,20 @@ export const swapRoutes = new Elysia().post(
     }
 
     const chainConfig = getChainConfig(chainId);
+    const validBuyTokens = getValidBuyTokens(chainId);
+    const tickerByAddress = getTickerByAddress(chainId);
 
     for (const o of orders) {
       if (!isAddress(o.buyToken)) {
         console.error(`[swap] Invalid buyToken address: ${o.buyToken}`);
         throw new Error(`Invalid buyToken address: ${o.buyToken}`);
       }
-      if (
-        chainConfig.chainId === 57073 &&
-        !validBuyTokens.has(o.buyToken.toLowerCase())
-      ) {
-        console.error(`[swap] Unsupported stock token: ${o.buyToken}`);
+      if (!validBuyTokens.has(o.buyToken.toLowerCase())) {
+        console.error(
+          `[swap] Unsupported stock token on chain ${chainId}: ${o.buyToken}`,
+        );
         throw new Error(
-          `buyToken is not a supported stock token: ${o.buyToken}`,
+          `buyToken is not a supported stock token on chain ${chainId}: ${o.buyToken}`,
         );
       }
       const sellAmount = BigInt(o.sellAmount);

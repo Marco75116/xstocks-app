@@ -1,3 +1,5 @@
+import { ETHEREUM_STOCKS } from "./ethereum-stocks";
+
 const CDN_BASE = "https://cdn.prod.website-files.com/655f3efc4be468487052e35a";
 
 export type Stock = {
@@ -174,4 +176,13 @@ export const STOCKS: Stock[] = [
 
 export function getStockByTicker(ticker: string): Stock | undefined {
   return STOCKS.find((s) => s.ticker === ticker);
+}
+
+export { ETHEREUM_STOCKS };
+
+export function getStocksByChainId(chainId: number): Stock[] {
+  if (chainId === 1) {
+    return ETHEREUM_STOCKS;
+  }
+  return STOCKS;
 }
