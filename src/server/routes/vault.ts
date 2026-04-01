@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { decodeEventLog, isAddress } from "viem";
 import { accountFactoryAbi } from "@/lib/abis/accountFactory";
@@ -212,48 +212,52 @@ export const vaultRoutes = new Elysia()
         throw new Error("Invalid owner address");
       }
 
-      const hasAccount = await publicClient.readContract({
+      const dcaFrequencySeconds: Record<string, number> = {
+        daily: 86400,
+        weekly: 604800,
+        monthly: 2592000,
+      };
+
+      const [{ max: maxSalt }] = await db
+        .select({ max: sql<number>`coalesce(max(${vaults.saltIndex}), -1)` })
+        .from(vaults)
+        .where(eq(vaults.owner, owner));
+      const saltIndex = BigInt(maxSalt + 1);
+
+      const config = {
+        tokens: allocations.map((a) => a.tokenAddress as `0x${string}`),
+        allocations: allocations.map((a) => BigInt(a.weight)),
+        dcaAmount: dcaAmount ? BigInt(Math.floor(dcaAmount * 1e6)) : BigInt(0),
+        dcaFrequency: dcaFrequency
+          ? BigInt(dcaFrequencySeconds[dcaFrequency] ?? 0)
+          : BigInt(0),
+      };
+
+      const txHash = await getWalletClient().writeContract({
         address: ACCOUNT_FACTORY_ADDRESS,
         abi: accountFactoryAbi,
-        functionName: "hasAccount",
-        args: [owner],
+        functionName: "createAccount",
+        args: [owner, saltIndex, config],
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
       });
 
       let smartAccountAddress: string | undefined;
 
-      if (hasAccount) {
-        const existing = await publicClient.readContract({
-          address: ACCOUNT_FACTORY_ADDRESS,
+      const log = receipt.logs.find(
+        (l) =>
+          l.address.toLowerCase() === ACCOUNT_FACTORY_ADDRESS.toLowerCase(),
+      );
+
+      if (log) {
+        const decoded = decodeEventLog({
           abi: accountFactoryAbi,
-          functionName: "accountOf",
-          args: [owner],
+          data: log.data,
+          topics: log.topics,
         });
-        smartAccountAddress = existing as string;
-      } else {
-        const txHash = await getWalletClient().writeContract({
-          address: ACCOUNT_FACTORY_ADDRESS,
-          abi: accountFactoryAbi,
-          functionName: "createAccount",
-          args: [owner],
-        });
-
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash: txHash,
-        });
-
-        const log = receipt.logs.find(
-          (l) =>
-            l.address.toLowerCase() === ACCOUNT_FACTORY_ADDRESS.toLowerCase(),
-        );
-
-        if (log) {
-          const decoded = decodeEventLog({
-            abi: accountFactoryAbi,
-            data: log.data,
-            topics: log.topics,
-          });
-          smartAccountAddress = (decoded.args as { account: string }).account;
-        }
+        smartAccountAddress = (decoded.args as { account: string }).account;
       }
 
       const [vault] = await db
@@ -261,6 +265,7 @@ export const vaultRoutes = new Elysia()
         .values({
           name,
           owner,
+          saltIndex: Number(saltIndex),
           smartAccountAddress,
           strategy,
           dcaFrequency: strategy === "dca" ? dcaFrequency : null,

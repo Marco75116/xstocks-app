@@ -52,6 +52,7 @@ function WithdrawRow({
   vaultId: string;
 }) {
   const stock = getStockByTicker(comp.ticker);
+  const { address: connectedAddress } = useAccount();
   const [amount, setAmount] = useState("");
   const submittedAmount = useRef("");
   const hasBalance = balance > 0;
@@ -148,7 +149,7 @@ function WithdrawRow({
       address: smartAccountAddress as `0x${string}`,
       abi: userAccountAbi,
       functionName: "withdraw",
-      args: [comp.tokenAddress as `0x${string}`, parsedRaw],
+      args: [comp.tokenAddress as `0x${string}`, parsedRaw, connectedAddress!],
       chainId: INK_CHAIN_ID,
     });
   }

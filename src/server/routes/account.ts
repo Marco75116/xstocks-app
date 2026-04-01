@@ -19,7 +19,16 @@ export const accountRoutes = new Elysia().post(
         address: ACCOUNT_FACTORY_ADDRESS,
         abi: accountFactoryAbi,
         functionName: "createAccount",
-        args: [owner],
+        args: [
+          owner,
+          BigInt(0),
+          {
+            tokens: [],
+            allocations: [],
+            dcaAmount: BigInt(0),
+            dcaFrequency: BigInt(0),
+          },
+        ],
       });
     } catch (err) {
       console.error("[account] createAccount tx failed:", err);
