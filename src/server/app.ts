@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { accountRoutes } from "@/server/routes/account";
 import { healthRoutes } from "@/server/routes/health";
+import { liquidateRoutes } from "@/server/routes/liquidate";
 import { signalRoutes } from "@/server/routes/signals";
 import { swapRoutes } from "@/server/routes/swap";
 import { vaultRoutes } from "@/server/routes/vault";
@@ -12,6 +13,7 @@ export const app = new Elysia({ prefix: "/api" })
   .use(swapRoutes)
   .use(vaultRoutes)
   .use(withdrawRoutes)
-  .use(signalRoutes);
+  .use(signalRoutes)
+  .use(liquidateRoutes);
 
 export type App = typeof app;

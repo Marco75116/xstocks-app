@@ -54,10 +54,24 @@ export const withdrawOrder = pgTable("withdraw_order", {
   createdAt: numeric("created_at").notNull(),
 });
 
+export const sellOrder = pgTable("sell_order", {
+  id: text("id").primaryKey(),
+  vaultId: text("vault_id").notNull(),
+  ticker: text("ticker").notNull(),
+  tokenAddress: text("token_address").notNull(),
+  sellAmount: text("sell_amount").notNull(),
+  orderUid: text("order_uid"),
+  status: text("status").notNull(),
+  error: text("error"),
+  chainId: integer("chain_id").notNull(),
+  createdAt: numeric("created_at").notNull(),
+});
+
 export const vaultRelations = relations(vault, ({ many }) => ({
   compositions: many(vaultComposition),
   buyOrders: many(buyOrder),
   withdrawOrders: many(withdrawOrder),
+  sellOrders: many(sellOrder),
 }));
 
 export const vaultCompositionRelations = relations(
@@ -80,6 +94,13 @@ export const buyOrderRelations = relations(buyOrder, ({ one }) => ({
 export const withdrawOrderRelations = relations(withdrawOrder, ({ one }) => ({
   vault: one(vault, {
     fields: [withdrawOrder.vaultId],
+    references: [vault.id],
+  }),
+}));
+
+export const sellOrderRelations = relations(sellOrder, ({ one }) => ({
+  vault: one(vault, {
+    fields: [sellOrder.vaultId],
     references: [vault.id],
   }),
 }));

@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BuyDialog } from "@/components/vault/BuyDialog";
 import { FundDialog } from "@/components/vault/FundDialog";
+import { LiquidateButton } from "@/components/vault/LiquidateButton";
 import { OrdersHistory } from "@/components/vault/OrdersHistory";
 import { VaultHistoryChart } from "@/components/vault/VaultHistoryChart";
 import { VaultValueChart } from "@/components/vault/VaultValueChart";
@@ -282,6 +283,14 @@ export default function VaultDetailPage({
                         </Badge>
                       )}
                     </div>
+                    {vault.smartAccountAddress && (
+                      <LiquidateButton
+                        vaultId={vault.id}
+                        smartAccountAddress={vault.smartAccountAddress}
+                        compositions={compositions}
+                        chainId={vaultChainId}
+                      />
+                    )}
                   </div>
                 )}
               </CardContent>

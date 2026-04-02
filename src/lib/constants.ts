@@ -20,7 +20,7 @@ export const CHAIN_CONFIGS: Record<SupportedChainId, ChainConfig> = {
     chainId: 57073,
     name: "Ink Mainnet",
     shortName: "Ink",
-    accountFactory: "0x0144029bc9Db2D1b13d9216cad7870d567f08Fda",
+    accountFactory: "0x3B66CAf761bDF40e5174F2DF3ddBB12202F8B9a2",
     operator: "0xB351edfb846d7c26Aed130c2DE66151c1efF5236",
     usdc: "0x2D270e6886d130D724215A266106e6832161EAEd",
     swapRelayer: "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
