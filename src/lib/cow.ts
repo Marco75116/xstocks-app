@@ -67,7 +67,7 @@ type CowApiOrder = {
   from: string;
 };
 
-const ORDER_VALIDITY_SECONDS = 1200;
+export const ORDER_VALIDITY_SECONDS = 1200;
 
 export function buildOrder(params: {
   userAccountAddress: Address;
@@ -77,6 +77,28 @@ export function buildOrder(params: {
   return {
     sellToken: USDC_ADDRESS,
     buyToken: params.buyToken,
+    receiver: params.userAccountAddress,
+    sellAmount: params.sellAmount,
+    buyAmount: BigInt(1),
+    validTo: Math.floor(Date.now() / 1000) + ORDER_VALIDITY_SECONDS,
+    appData:
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+    feeAmount: BigInt(0),
+    kind: "sell",
+    partiallyFillable: false,
+    sellTokenBalance: "erc20",
+    buyTokenBalance: "erc20",
+  };
+}
+
+export function buildSellOrder(params: {
+  userAccountAddress: Address;
+  sellToken: Address;
+  sellAmount: bigint;
+}): GPv2Order {
+  return {
+    sellToken: params.sellToken,
+    buyToken: USDC_ADDRESS,
     receiver: params.userAccountAddress,
     sellAmount: params.sellAmount,
     buyAmount: BigInt(1),
