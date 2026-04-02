@@ -150,22 +150,26 @@ export const liquidateRoutes = new Elysia().post(
       }),
     );
 
-    const now = String(Date.now());
-    const dbRows = results.map((r) => ({
-      id: crypto.randomUUID(),
-      vaultId,
-      ticker: r.ticker,
-      tokenAddress: r.sellToken,
-      sellAmount: r.sellAmount,
-      orderUid: r.orderUid ?? null,
-      status: r.orderUid ? "submitted" : "failed",
-      error: r.error ?? null,
-      chainId: 57073,
-      createdAt: now,
-    }));
+    try {
+      const now = String(Date.now());
+      const dbRows = results.map((r) => ({
+        id: crypto.randomUUID(),
+        vaultId,
+        ticker: r.ticker,
+        tokenAddress: r.sellToken,
+        sellAmount: r.sellAmount,
+        orderUid: r.orderUid ?? null,
+        status: r.orderUid ? "submitted" : "failed",
+        error: r.error ?? null,
+        chainId: 57073,
+        createdAt: now,
+      }));
 
-    if (dbRows.length > 0) {
-      await db.insert(sellOrder).values(dbRows);
+      if (dbRows.length > 0) {
+        await db.insert(sellOrder).values(dbRows);
+      }
+    } catch (err) {
+      console.error("[liquidate] Failed to persist sell orders to DB:", err);
     }
 
     const succeeded = results.filter((r) => r.orderUid).length;
