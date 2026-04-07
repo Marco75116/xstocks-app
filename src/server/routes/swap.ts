@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { type Address, hashTypedData, isAddress } from "viem";
+import { type Address, isAddress } from "viem";
 import { getChainConfig } from "@/lib/constants";
 import {
   buildOrder,
@@ -9,13 +9,7 @@ import {
   MIN_SELL_AMOUNT,
   orderToApiPayload,
 } from "@/lib/cow";
-import { getStocksByChainId, STOCKS } from "@/lib/data/stocks";
-import {
-  buildOneInchOrder,
-  ONEINCH_DOMAIN,
-  ONEINCH_ORDER_TYPES,
-  orderToApiPayload as oneInchOrderToPayload,
-} from "@/lib/oneinch";
+import { getStocksByChainId } from "@/lib/data/stocks";
 import { getWalletClient } from "@/lib/viemClient";
 import { db } from "@/server/db";
 import { buyOrder } from "@/server/db/schema";
@@ -55,7 +49,7 @@ async function submitCowOrder(
 
   let signature: string;
   try {
-    signature = await getWalletClient(57073).signTypedData({
+    signature = await getWalletClient().signTypedData({
       domain: GPV2_DOMAIN,
       types: GPV2_ORDER_TYPES,
       primaryType: "Order",
@@ -91,80 +85,6 @@ async function submitCowOrder(
   const orderUid = (await response.json()) as string;
   console.info(`[swap] CoW order submitted for ${buyToken}: ${orderUid}`);
   return { buyToken, orderUid };
-}
-
-async function submitOneInchOrder(
-  userAccountAddress: Address,
-  buyToken: Address,
-  sellAmount: bigint,
-): Promise<OrderResult> {
-  const order = buildOneInchOrder({
-    userAccountAddress,
-    buyToken,
-    sellAmount,
-  });
-
-  let signature: string;
-  try {
-    signature = await getWalletClient(1).signTypedData({
-      domain: ONEINCH_DOMAIN,
-      types: ONEINCH_ORDER_TYPES,
-      primaryType: "Order",
-      message: order,
-    });
-  } catch (err) {
-    console.error(`[swap] Failed to sign 1inch order for ${buyToken}:`, err);
-    return { buyToken, error: "Order signing failed" };
-  }
-
-  const orderHash = hashTypedData({
-    domain: ONEINCH_DOMAIN,
-    types: ONEINCH_ORDER_TYPES,
-    primaryType: "Order",
-    message: order,
-  });
-
-  const payload = oneInchOrderToPayload(order, signature, orderHash);
-
-  const apiKey = process.env.ONEINCH_API_KEY;
-  if (!apiKey) {
-    console.error("[swap] 1inch API key not configured");
-    return { buyToken, error: "1inch API key not configured" };
-  }
-
-  const apiUrl = "https://api.1inch.dev/orderbook/v4.1/1";
-  console.info(`[swap] 1inch request URL: ${apiUrl}`);
-  console.info(`[swap] 1inch payload:`, JSON.stringify(payload, null, 2));
-
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(
-      `[swap] 1inch API error for ${buyToken} (${response.status}):`,
-      `URL: ${apiUrl}`,
-      `Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
-      `Response body: ${errorBody}`,
-    );
-    let description = "1inch API order submission failed";
-    try {
-      const parsed = JSON.parse(errorBody) as { description?: string };
-      if (parsed.description) description = parsed.description;
-    } catch {}
-    return { buyToken, error: description };
-  }
-
-  const result = (await response.json()) as { orderHash?: string };
-  const uid = result.orderHash ?? orderHash;
-  console.info(`[swap] 1inch order submitted for ${buyToken}: ${uid}`);
-  return { buyToken, orderUid: uid };
 }
 
 export const swapRoutes = new Elysia().post(
@@ -214,16 +134,13 @@ export const swapRoutes = new Elysia().post(
       }
     }
 
-    const submitOrder =
-      chainConfig.swapProtocol === "cow" ? submitCowOrder : submitOneInchOrder;
-
     console.info(
-      `[swap] Submitting ${orders.length} orders via ${chainConfig.swapProtocol}...`,
+      `[swap] Submitting ${orders.length} orders via CoW Protocol...`,
     );
 
     const results = await Promise.all(
       orders.map((o) =>
-        submitOrder(
+        submitCowOrder(
           userAccountAddress as Address,
           o.buyToken as Address,
           BigInt(o.sellAmount),

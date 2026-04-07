@@ -14,8 +14,8 @@ export const accountRoutes = new Elysia().post(
     }
 
     const chainConfig = getChainConfig(chainId);
-    const walletClient = getWalletClient(chainConfig.chainId);
-    const client = getPublicClient(chainConfig.chainId);
+    const walletClient = getWalletClient();
+    const client = getPublicClient();
 
     let txHash: `0x${string}`;
     try {

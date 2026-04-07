@@ -15,7 +15,6 @@ export {
   type PortfolioSnapshot,
 } from "./portfolio";
 export {
-  ETHEREUM_STOCKS,
   getStockByTicker,
   getStocksByChainId,
   STOCKS,
