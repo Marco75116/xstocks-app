@@ -30,7 +30,7 @@ async function submitCowSellOrder(
 
   let signature: string;
   try {
-    signature = await getWalletClient(57073).signTypedData({
+    signature = await getWalletClient().signTypedData({
       domain: GPV2_DOMAIN,
       types: GPV2_ORDER_TYPES,
       primaryType: "Order",
@@ -107,7 +107,7 @@ export const liquidateRoutes = new Elysia().post(
       throw new Error("Vault has no compositions");
     }
 
-    const client = getPublicClient(57073);
+    const client = getPublicClient();
     const smartAccount = found.smartAccountAddress as Address;
 
     const balances = await Promise.all(

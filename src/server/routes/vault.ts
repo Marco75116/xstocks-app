@@ -360,8 +360,8 @@ export const vaultRoutes = new Elysia()
         .from(vault)
         .where(eq(vault.owner, owner));
 
-      const walletClient = getWalletClient(chainConfig.chainId);
-      const client = getPublicClient(chainConfig.chainId);
+      const walletClient = getWalletClient();
+      const client = getPublicClient();
 
       let saltIndex = BigInt(Math.max(maxSalt + 1, 10));
 
@@ -448,16 +448,14 @@ export const vaultRoutes = new Elysia()
       }
 
       if (smartAccountAddress) {
-        verifyUserAccount(
-          smartAccountAddress,
-          owner as `0x${string}`,
-          chainConfig.chainId,
-        ).catch((err) => {
-          console.error(
-            "[vault] POST /vault — blockscout verification failed:",
-            err instanceof Error ? err.message : err,
-          );
-        });
+        verifyUserAccount(smartAccountAddress, owner as `0x${string}`).catch(
+          (err) => {
+            console.error(
+              "[vault] POST /vault — blockscout verification failed:",
+              err instanceof Error ? err.message : err,
+            );
+          },
+        );
       }
 
       const vaultId = crypto.randomUUID();

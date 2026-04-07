@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 
-export type SupportedChainId = 1 | 57073;
+export type SupportedChainId = 57073;
 
 export type ChainConfig = {
   chainId: SupportedChainId;
@@ -11,44 +11,34 @@ export type ChainConfig = {
   usdc: Address;
   swapRelayer: Address;
   explorerUrl: string;
-  swapProtocol: "cow" | "1inch";
+  swapProtocol: "cow";
   logo: string;
 };
 
-export const CHAIN_CONFIGS: Record<SupportedChainId, ChainConfig> = {
-  57073: {
-    chainId: 57073,
-    name: "Ink Mainnet",
-    shortName: "Ink",
-    accountFactory: "0x3B66CAf761bDF40e5174F2DF3ddBB12202F8B9a2",
-    operator: "0xB351edfb846d7c26Aed130c2DE66151c1efF5236",
-    usdc: "0x2D270e6886d130D724215A266106e6832161EAEd",
-    swapRelayer: "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
-    explorerUrl: "https://explorer.inkonchain.com",
-    swapProtocol: "cow",
-    logo: "/chains/ink.svg",
-  },
-  1: {
-    chainId: 1,
-    name: "Ethereum",
-    shortName: "Ethereum",
-    accountFactory: "0x52ce41F6B4e95b6891F93Ad85165b525412e1362",
-    operator: "0xB351edfb846d7c26Aed130c2DE66151c1efF5236",
-    usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    swapRelayer: "0x111111125421cA6dc452d289314280a0f8842A65",
-    explorerUrl: "https://etherscan.io",
-    swapProtocol: "1inch",
-    logo: "/chains/ethereum.svg",
-  },
+export const CHAIN_CONFIG: ChainConfig = {
+  chainId: 57073,
+  name: "Ink Mainnet",
+  shortName: "Ink",
+  accountFactory: "0x3B66CAf761bDF40e5174F2DF3ddBB12202F8B9a2",
+  operator: "0xB351edfb846d7c26Aed130c2DE66151c1efF5236",
+  usdc: "0x2D270e6886d130D724215A266106e6832161EAEd",
+  swapRelayer: "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
+  explorerUrl: "https://explorer.inkonchain.com",
+  swapProtocol: "cow",
+  logo: "/chains/ink.svg",
 };
 
-export const SUPPORTED_CHAIN_IDS: SupportedChainId[] = [57073, 1];
+export const CHAIN_CONFIGS: Record<SupportedChainId, ChainConfig> = {
+  57073: CHAIN_CONFIG,
+};
+
+export const SUPPORTED_CHAIN_IDS: SupportedChainId[] = [57073];
 export const DEFAULT_CHAIN_ID: SupportedChainId = 57073;
 
 export function isAppSupportedChain(
   chainId: number,
 ): chainId is SupportedChainId {
-  return chainId === 1 || chainId === 57073;
+  return chainId === 57073;
 }
 
 const WALLET_CHAIN_NAMES: Record<number, string> = {
